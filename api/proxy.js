@@ -37,7 +37,7 @@ module.exports = async (req, res) => {
       response.body.pipe(res);
     }
   } catch (error) {
-    res.status(500).send(error.message);
+    console.error('Error fetching the URL:', error.message);
+    res.status(500).send('Internal Server Error');
   }
 };
-
