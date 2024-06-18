@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 
 module.exports = async (req, res) => {
-  const targetBaseUrl = 'https://bbs.yuhuangonly.com';
+  const targetBaseUrl = 'http://bbs.yuhuangonly.com';
   const path = req.query.path || '';
 
   console.log('Received request:', req.url);
