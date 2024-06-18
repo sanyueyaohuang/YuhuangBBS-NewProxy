@@ -23,6 +23,9 @@
     }
   ],
   "rewrites": [
-    {"source": "/(.*)", "destination": "http://bbs.yuhuangonly.com/$1"}
+    {
+      "source": "/(.*)",
+      "destination": "/api/proxy?path=$1"
+    }
   ]
 }
