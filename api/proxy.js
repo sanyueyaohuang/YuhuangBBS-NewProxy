@@ -1,31 +1,43 @@
 const fetch = require('node-fetch');
+const { URL } = require('url');
 
 module.exports = async (req, res) => {
-  const { url } = req.query;
+  const targetBaseUrl = 'https://bbs.yuhuangonly.com';
+  const { path } = req.query;
 
-  if (!url) {
-    res.status(400).send('No URL provided');
+  if (!path) {
+    res.status(400).send('No path provided');
     return;
   }
 
   try {
-    const response = await fetch(url, {
+    const targetUrl = new URL(path, targetBaseUrl).toString();
+
+    const response = await fetch(targetUrl, {
       method: req.method,
       headers: {
         ...req.headers,
-        host: new URL(url).host
+        host: new URL(targetBaseUrl).host
       },
       body: req.method === 'GET' || req.method === 'HEAD' ? null : req.body
     });
 
-    // Set the headers from the proxied response
-    response.headers.forEach((value, name) => {
-      res.setHeader(name, value);
-    });
+    const contentType = response.headers.get('content-type');
+    res.setHeader('content-type', contentType);
 
-    // Stream the response body
-    response.body.pipe(res);
+    if (contentType && contentType.includes('text/html')) {
+      // Rewrite URLs in HTML content
+      let body = await response.text();
+      body = body.replace(/href="\/(.*?)"/g, `href="/api/proxy?path=/$1"`);
+      body = body.replace(/src="\/(.*?)"/g, `src="/api/proxy?path=/$1"`);
+
+      res.send(body);
+    } else {
+      // Stream other types of content directly
+      response.body.pipe(res);
+    }
   } catch (error) {
     res.status(500).send(error.message);
   }
 };
+
